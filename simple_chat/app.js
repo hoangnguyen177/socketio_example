@@ -1,21 +1,26 @@
 
+
 var express = require('express')
   , app = express()
   , http = require('http')
   , server = http.createServer(app)
   , io = require('socket.io').listen(server);
 
-server.listen(8080);
+//var server = require('http').Server()
+//  , io = require('socket.io').listen(server)
+
+var  port = parseInt(process.argv[2], 10) || 3000
+     , nsp = process.argv[3] || '/';
 
 // routing
-app.get('/', function (req, res) {
+app.get(nsp, function (req, res) {
   res.sendfile(__dirname + '/index.html');
 });
 
 // usernames which are currently connected to the chat
 var usernames = {};
 
-io.sockets.on('connection', function (socket) {
+io.of(nsp).on('connection', function (socket) {
 
   // when the client emits 'sendchat', this listens and executes
   socket.on('sendchat', function (data) {
@@ -47,4 +52,9 @@ io.sockets.on('connection', function (socket) {
     socket.broadcast.emit('updatechat', 'SERVER', socket.username + ' has disconnected');
   });
 });
+
+server.listen(port, function() {
+  console.log('Socket.IO server listening on port', port);
+});
+
 
